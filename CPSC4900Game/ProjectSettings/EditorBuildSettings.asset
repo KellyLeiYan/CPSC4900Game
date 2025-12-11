@@ -6,6 +6,12 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/SampleScene.unity
+    path: Assets/Scenes/boot.unity
     guid: 2cda990e2423bbf4892e6590ba056729
+  - enabled: 1
+    path: Assets/Scenes/TheCarpetedFloor.unity
+    guid: 165ad52c04e014033901563b70d8078e
+  - enabled: 1
+    path: Assets/Scenes/GameOver.unity
+    guid: ddeccdb8b318442bca2a9c7f74bf54b7
   m_configObjects: {}
