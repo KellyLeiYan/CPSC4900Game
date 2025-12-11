@@ -1,44 +1,73 @@
 using System.Collections;
 using System.Collections.Generic;
-// Scripts/Interactables/ExitGreen.cs
 using UnityEngine;
 
+// Scripts/Interactables/ExitGreen.cs
 public class ExitGreen : MonoBehaviour, IInteractable
 {
     public RuleEngine engine;
-    public ClipSwap swap;              // optional if you want an "open" frame
+    public ClipSwap swap;                 // frames[0]=closed, frames[1]=open
+    public GameObject outdoorImage;       // assign an "outside" sprite/GO to enable on success
     public float openThenProcessDelay = 0.12f;
 
     bool busy;
 
-    public void OnInteract()
+    void Awake()
     {
-        if (!busy) StartCoroutine(OpenThenProcess());
+        // Make sure door starts closed
+        if (swap) swap.ShowClosed();
+
+        // Make sure the outdoor image starts hidden
+        if (outdoorImage) outdoorImage.SetActive(false);
     }
 
-    System.Collections.IEnumerator OpenThenProcess()
+    public void OnInteract()
+    {
+        if (!busy)
+            StartCoroutine(TryOpen());
+    }
+
+    IEnumerator TryOpen()
     {
         busy = true;
-        if (swap) swap.ShowOpen();
-        if (openThenProcessDelay > 0f)
-            yield return new WaitForSeconds(openThenProcessDelay);
 
-        var action = new PlayerAction { Type = PlayerActionType.UseGreenExit, Violates = false };
+        var action  = new PlayerAction { Type = PlayerActionType.UseGreenExit, Violates = false };
         var outcome = engine.Resolve(action, out var why);
+
+        Debug.Log($"[ExitGreen] outcome={outcome}, why={why}, outdoorImageAssigned={(outdoorImage != null)}");
 
         switch (outcome)
         {
             case RuleOutcome.RouteTrueExit:
-                NodeRouter.GoTo("F4");  // only when Rule D says so in your engine
+                // ✅ Only on TRUE EXIT do we open the door + show outside
+                if (swap) swap.ShowOpen();
+
+                if (openThenProcessDelay > 0f)
+                    yield return new WaitForSeconds(openThenProcessDelay);
+
+                if (outdoorImage)
+                {
+                    outdoorImage.SetActive(true);
+                    Debug.Log("[ExitGreen] outdoorImage.SetActive(true) called.");
+                }
+
+                // Optional: prevent further clicks on the door
+                var col = GetComponent<Collider2D>();
+                if (col) col.enabled = false;
                 break;
+
             case RuleOutcome.Loop:
-                NodeRouter.GoTo("F0");  // liar's loop, if that's how you set it up
                 if (swap) swap.ShowClosed();
+                NodeRouter.GoTo("F0");
                 break;
+
             case RuleOutcome.Kill:
+                if (swap) swap.ShowClosed();
                 DeathHandler.Kill(why);
                 break;
+
             default:
+                // stay closed, maybe play locked sound later
                 if (swap) swap.ShowClosed();
                 break;
         }

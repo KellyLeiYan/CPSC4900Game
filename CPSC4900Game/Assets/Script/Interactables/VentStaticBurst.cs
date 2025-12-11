@@ -1,27 +1,46 @@
 using System.Collections;
 using System.Collections.Generic;
-// Scripts/Interactables/VentStaticBurst.cs
 using UnityEngine;
-using System.Collections;
 
-public class VentStaticBurst : MonoBehaviour
+// Scripts/Audio/VentStaticBurst.cs
+public class VentStaticBurst : MonoBehaviour, IInteractable
 {
-    public AmbienceState ambience;      // drag Ambience_Chapter1
-    public AudioSource staticSource;    // looping Static_Loop.wav (start muted)
-    public Vector2 burstEverySeconds = new Vector2(2.0f, 4.0f);
-    public float burstDuration = 1.8f;
+    public AmbienceState ambience;     // drag Ambience_Chapter1
+    public AudioSource staticSource;   // 2D loop, Loop ON, start Muted
 
-    void Start(){ StartCoroutine(BurstLoop()); }
+    public float burstDuration = 1.8f; // how long the static stays ON
 
-    IEnumerator BurstLoop(){
-        while(true){
-            yield return new WaitForSeconds(Random.Range(burstEverySeconds.x, burstEverySeconds.y));
-            ambience.SetStatic(true);
-            if (staticSource) staticSource.mute = false;
+    bool isBursting = false;           // prevents overlap
 
-            yield return new WaitForSeconds(burstDuration);
-            ambience.SetStatic(false);
-            if (staticSource) staticSource.mute = true;
-        }
+    // Called when the player clicks this object
+    public void OnInteract()
+    {
+        if (!isBursting)
+            StartCoroutine(SingleBurst());
+    }
+
+    IEnumerator SingleBurst()
+    {
+        isBursting = true;
+
+        // STATIC ON
+        ambience.SetStatic(true);
+        if (staticSource) staticSource.mute = false;
+
+        yield return new WaitForSeconds(burstDuration);
+
+        // STATIC OFF
+        ambience.SetStatic(false);
+        if (staticSource) staticSource.mute = true;
+
+        isBursting = false;
+    }
+
+    void OnDisable()
+    {
+        // failsafe reset if object disables mid-burst
+        ambience.SetStatic(false);
+        if (staticSource) staticSource.mute = true;
+        isBursting = false;
     }
 }

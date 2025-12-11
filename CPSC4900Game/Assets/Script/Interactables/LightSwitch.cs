@@ -22,6 +22,5 @@ public class LightSwitch : MonoBehaviour, IInteractable
         ambience.SetHum(next);
         if (humSource) humSource.mute = !next;
         if (flicker) flicker.SetEnabled(next);
-        // (optional) play click SFX
     }
 }

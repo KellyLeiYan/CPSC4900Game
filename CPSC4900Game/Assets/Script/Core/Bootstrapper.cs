@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class Bootstrapper : MonoBehaviour {
-    [SerializeField] string firstGameplayScene = "TheCarpetedFloor";
+    [SerializeField] string Opening = "Opening";
     [SerializeField] bool showLoading = true;
 
     void Awake(){
@@ -14,7 +14,7 @@ public class Bootstrapper : MonoBehaviour {
     void Start(){
         if (showLoading) ShowBasicLoadingOverlay();
         // Load gameplay scene asynchronously
-        SceneManager.LoadSceneAsync(firstGameplayScene, LoadSceneMode.Single);
+        SceneManager.LoadSceneAsync(Opening, LoadSceneMode.Single);
     }
 
     void ShowBasicLoadingOverlay(){
